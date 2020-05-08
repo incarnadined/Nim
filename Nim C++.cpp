@@ -34,6 +34,8 @@ void NameSubmit(HWND, int);
 
 DWORD ColourBox(HWND);
 
+void ChangeTurn(HWND);
+
 HMENU hMenu;
 HMENU hFileMenu;
 HMENU hPersonalisation;
@@ -130,19 +132,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
 			break;
 
 		case CHANGE_TURN: {
-			if (currentTurn == 0)
-				currentTurn = 1;
-			else
-				currentTurn = 0;
-
-			hPlayer1 = CreateWindowW(L"static", nPlayer1.c_str(), WS_VISIBLE | WS_CHILD | ES_CENTER,
-				10, 10, 100, 50, hWnd, (HMENU)PLAYER_1, NULL, NULL);
-
-			hPlayer2 = CreateWindowW(L"static", nPlayer2.c_str(), WS_VISIBLE | WS_CHILD | ES_CENTER,
-				WIDTH - 120, 10, 100, 50, hWnd, (HMENU)PLAYER_2, NULL, NULL);
-
-			currentHit.clear();
-
+			ChangeTurn(hWnd);
 			break;
 		}
 
@@ -302,6 +292,15 @@ void ReDraw(HWND hWnd, int value)
 		RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE);
 		currentHit.push_back(hImgs[value]);
 	}
+	//Check if there are any more viable counters in a row to auto-end turn
+	int valid = 0;
+	for (int i = 0; i < (int)n; ++i) {
+		if (counters[(int)n-1][i] == black) {
+			++valid;
+		}
+	}
+	if (valid == 0)
+		ChangeTurn(hWnd);
 }
 
 void ChangeNames(HWND hWnd)
@@ -362,4 +361,21 @@ DWORD ColourBox(HWND hWnd)
 		rgbCurrent = cc.rgbResult;
 	}
 	return rgbCurrent;
+}
+
+void ChangeTurn(HWND hWnd) {
+	if (currentHit.size() == 0)
+		return;
+	if (currentTurn == 0)
+		currentTurn = 1;
+	else
+		currentTurn = 0;
+
+	hPlayer1 = CreateWindowW(L"static", nPlayer1.c_str(), WS_VISIBLE | WS_CHILD | ES_CENTER,
+		10, 10, 100, 50, hWnd, (HMENU)PLAYER_1, NULL, NULL);
+
+	hPlayer2 = CreateWindowW(L"static", nPlayer2.c_str(), WS_VISIBLE | WS_CHILD | ES_CENTER,
+		WIDTH - 120, 10, 100, 50, hWnd, (HMENU)PLAYER_2, NULL, NULL);
+
+	currentHit.clear();
 }
